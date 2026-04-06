@@ -1,0 +1,5 @@
+{
+  "name": "Baking Scaler",
+  "description": "A simple and elegant tool for bakers to scale recipes based on desired yield. No AI required, just pure math.",
+  "requestFramePermissions": []
+}
