@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">烘焙换算助手</string>
+    <string name="title_activity_main">烘焙换算助手</string>
+    <string name="package_name">com.yangshulin.bakingscaler</string>
+    <string name="custom_url_scheme">com.yangshulin.bakingscaler</string>
+</resources>
