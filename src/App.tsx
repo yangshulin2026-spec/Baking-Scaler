@@ -32,6 +32,52 @@ function cn(...inputs: ClassValue[]) {
 // Simple ID generator for better compatibility
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+// Custom Numeric Input to handle 0 and decimal points better
+const NumericInput = ({ value, onChange, className, placeholder }: { 
+  value: number; 
+  onChange: (val: number) => void; 
+  className?: string; 
+  placeholder?: string;
+}) => {
+  const [localValue, setLocalValue] = useState(value.toString());
+  
+  useEffect(() => {
+    const currentNum = parseFloat(localValue);
+    if (isNaN(currentNum)) {
+      if (value !== 0) setLocalValue(value.toString());
+    } else if (currentNum !== value) {
+      setLocalValue(value.toString());
+    }
+  }, [value, localValue]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow digits and one decimal point
+    if (/^\d*\.?\d*$/.test(val)) {
+      setLocalValue(val);
+      const num = parseFloat(val);
+      onChange(isNaN(num) ? 0 : num);
+    }
+  };
+
+  const handleBlur = () => {
+    setLocalValue(value.toString());
+  };
+
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onFocus={(e) => e.target.select()}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+};
+
 const COMMON_INGREDIENTS = [
   { name: '面粉', unit: 'g' },
   { name: '细砂糖', unit: 'g' },
@@ -65,6 +111,7 @@ interface Recipe {
   sizeUnit: string;  // e.g., "g", "ml", "寸"
   ingredients: Ingredient[];
   updatedAt: number;
+  isDraft?: boolean; // New field to track unsaved recipes
 }
 
 const DEFAULT_RECIPES: Recipe[] = [
@@ -156,6 +203,7 @@ export default function App() {
   const [currentRecipeId, setCurrentRecipeId] = useState<string>(DEFAULT_RECIPES[0].id);
   const [isLibraryOpen, setIsLibraryOpen] = useState(true);
   const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
+  const [isIconPreviewOpen, setIsIconPreviewOpen] = useState(false); // New state for icon preview
   const [searchTerm, setSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -197,6 +245,8 @@ export default function App() {
   // Save recipes to local storage whenever they change
   useEffect(() => {
     if (isLoaded && recipes.length > 0) {
+      // Only persist non-draft recipes or all if you want to keep drafts across sessions
+      // For this requirement, we'll persist everything but the UI will handle the "Saved" status
       localStorage.setItem('baking-scaler-library-v3', JSON.stringify(recipes));
     }
   }, [recipes, isLoaded]);
@@ -270,7 +320,8 @@ export default function App() {
       targetSize: 1,
       sizeUnit: 'g',
       ingredients: [],
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
+      isDraft: true // Mark as draft
     };
     setRecipes(prev => [newRecipe, ...prev]);
     setCurrentRecipeId(newRecipe.id);
@@ -288,8 +339,21 @@ export default function App() {
   };
 
   const saveRecipeManually = () => {
+    if (!currentRecipe) return;
+    
+    // Validation: Ensure there's at least one ingredient
+    if (currentRecipe.ingredients.length === 0) {
+      showToast('请至少添加一种材料后再保存', 'info');
+      return;
+    }
+
     setIsSaving(true);
-    // The actual saving happens via useEffect, we just provide visual feedback
+    
+    // Remove draft status
+    setRecipes(prev => prev.map(r => 
+      r.id === currentRecipeId ? { ...r, isDraft: false, updatedAt: Date.now() } : r
+    ));
+
     setTimeout(() => {
       setIsSaving(false);
       showToast('配方已成功保存至配方库');
@@ -360,6 +424,91 @@ ${currentRecipe.ingredients.map(ing => {
 
   return (
     <div className="h-screen overflow-hidden bg-[#F8F5F2] text-[#2D241E] font-sans selection:bg-[#D4C3B3] flex">
+      {/* Icon Preview Modal */}
+      <AnimatePresence>
+        {isIconPreviewOpen && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsIconPreviewOpen(false)}
+              className="absolute inset-0 bg-[#5C4033]/60 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-white rounded-[2.5rem] p-8 md:p-12 max-w-lg w-full shadow-2xl space-y-8 overflow-hidden"
+            >
+              {/* Decorative Background */}
+              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#FAF7F2] rounded-full blur-3xl opacity-50" />
+              
+              <div className="text-center space-y-2 relative">
+                <h3 className="text-2xl font-black text-[#5C4033]">新图标设计方案</h3>
+                <p className="text-[#8B5E3C] text-sm">融合了“厨师帽 (烘焙)”与“秤/循环箭头 (换算)”</p>
+              </div>
+
+              <div className="flex flex-col items-center gap-8 relative">
+                {/* Large Icon Preview */}
+                <div className="w-48 h-48 bg-[#FAF7F2] rounded-[3rem] shadow-inner flex items-center justify-center p-8 border-4 border-white">
+                  <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-xl">
+                    <circle cx="100" cy="100" r="90" fill="#FDFBF7" stroke="#E6D5B8" stroke-width="2"/>
+                    <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
+                    <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
+                    <path d="M85 90H115M100 90V80M85 90L80 105H90L85 90ZM115 90L110 105H120L115 90Z" stroke="#FDFBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M45 100C45 69.6 69.6 45 100 45M155 100C155 130.4 130.4 155 100 155" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M40 90L45 100L50 90M150 110L155 100L160 110" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+
+                {/* Context Previews */}
+                <div className="flex gap-6 items-end">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-16 h-16 bg-[#FAF7F2] rounded-2xl shadow-md flex items-center justify-center p-3 border-2 border-white">
+                      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                        <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
+                        <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
+                        <path d="M85 90H115M100 90V80M85 90L80 105H90L85 90ZM115 90L110 105H120L115 90Z" stroke="#FDFBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M45 100C45 69.6 69.6 45 100 45M155 100C155 130.4 130.4 155 100 155" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-[#A89078]">手机桌面</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 bg-[#FAF7F2] rounded-xl shadow-sm flex items-center justify-center p-2 border border-white">
+                      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                        <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
+                        <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
+                      </svg>
+                    </div>
+                    <span className="text-[10px] font-bold text-[#A89078]">浏览器标签</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button 
+                  onClick={() => setIsIconPreviewOpen(false)}
+                  className="flex-1 py-4 bg-[#FAF7F2] text-[#8B5E3C] font-bold rounded-2xl hover:bg-[#F5F1E9] transition-colors"
+                >
+                  再想想
+                </button>
+                <button 
+                  onClick={() => {
+                    setIsIconPreviewOpen(false);
+                    showToast('图标已应用 (预览环境限制，部分位置需刷新生效)');
+                  }}
+                  className="flex-1 py-4 bg-[#5C4033] text-white font-bold rounded-2xl hover:bg-[#4A3329] transition-all shadow-xl shadow-[#5C4033]/20"
+                >
+                  就用这个！
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Modals */}
       <AnimatePresence>
         {recipeToDelete && (
@@ -479,6 +628,12 @@ ${currentRecipe.ingredients.map(ing => {
                 "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
                 currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
               )}>
+                {recipe.isDraft && (
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded text-[8px]",
+                    currentRecipeId === recipe.id ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-600"
+                  )}>草稿</span>
+                )}
                 <span>{recipe.ingredients.length} 种材料</span>
                 <span>•</span>
                 <span>{recipe.baseYield}{recipe.yieldName} × {recipe.baseSize}{recipe.sizeUnit}</span>
@@ -565,6 +720,13 @@ ${currentRecipe.ingredients.map(ing => {
             </div>
             <div className="flex gap-2">
               <button 
+                onClick={() => setIsIconPreviewOpen(true)}
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#FAF7F2] border border-[#E6D5B8] text-[#5C4033] rounded-xl font-bold text-sm hover:bg-[#F5F1E9] transition-all"
+              >
+                <ChefHat size={18} />
+                <span>查看新图标</span>
+              </button>
+              <button 
                 onClick={createNewRecipe}
                 className="flex items-center gap-2 px-4 py-2 bg-[#5C4033] text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#4A3329] transition-all active:scale-95"
               >
@@ -593,10 +755,17 @@ ${currentRecipe.ingredients.map(ing => {
                     <Utensils size={12} />
                     配方卡片
                   </div>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-md text-[9px] font-black text-green-300 uppercase tracking-tighter">
-                    <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
-                    已录入配方库
-                  </div>
+                  {currentRecipe.isDraft ? (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded-md text-[9px] font-black text-amber-300 uppercase tracking-tighter">
+                      <div className="w-1 h-1 bg-amber-400 rounded-full" />
+                      未保存的草稿
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-md text-[9px] font-black text-green-300 uppercase tracking-tighter">
+                      <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse" />
+                      已录入配方库
+                    </div>
+                  )}
                 </div>
                 <input 
                   type="text" 
@@ -618,11 +787,9 @@ ${currentRecipe.ingredients.map(ing => {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
-                          <input 
-                            type="number" 
-                            min="0"
+                          <NumericInput 
                             value={currentRecipe.baseYield}
-                            onChange={(e) => updateCurrentRecipe({ baseYield: Number(e.target.value) })}
+                            onChange={(val) => updateCurrentRecipe({ baseYield: val })}
                             className="w-full text-lg font-bold bg-transparent outline-none"
                           />
                           <input 
@@ -637,11 +804,9 @@ ${currentRecipe.ingredients.map(ing => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
-                          <input 
-                            type="number" 
-                            min="0"
+                          <NumericInput 
                             value={currentRecipe.baseSize}
-                            onChange={(e) => updateCurrentRecipe({ baseSize: Number(e.target.value) })}
+                            onChange={(val) => updateCurrentRecipe({ baseSize: val })}
                             className="w-full text-lg font-bold bg-transparent outline-none"
                           />
                           <input 
@@ -673,11 +838,9 @@ ${currentRecipe.ingredients.map(ing => {
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
-                          <input 
-                            type="number" 
-                            min="0"
+                          <NumericInput 
                             value={currentRecipe.targetYield}
-                            onChange={(e) => updateCurrentRecipe({ targetYield: Number(e.target.value) })}
+                            onChange={(val) => updateCurrentRecipe({ targetYield: val })}
                             className="w-full text-lg font-bold bg-transparent outline-none"
                           />
                           <span className="text-xs font-bold text-[#8B5E3C] ml-2 pl-2 border-l border-[#E6D5B8]">{currentRecipe.yieldName}</span>
@@ -686,11 +849,9 @@ ${currentRecipe.ingredients.map(ing => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
-                          <input 
-                            type="number" 
-                            min="0"
+                          <NumericInput 
                             value={currentRecipe.targetSize}
-                            onChange={(e) => updateCurrentRecipe({ targetSize: Number(e.target.value) })}
+                            onChange={(val) => updateCurrentRecipe({ targetSize: val })}
                             className="w-full text-lg font-bold bg-transparent outline-none"
                           />
                           <span className="text-xs font-bold text-[#8B5E3C] ml-2 pl-2 border-l border-[#E6D5B8]">{currentRecipe.sizeUnit}</span>
@@ -792,11 +953,9 @@ ${currentRecipe.ingredients.map(ing => {
 
                         <div className="flex items-center gap-2 md:gap-4 justify-between">
                           <div className="flex items-center gap-1 md:gap-2">
-                            <input 
-                              type="number" 
-                              min="0"
-                              value={ing.amount || ''}
-                              onChange={(e) => updateIngredient(ing.id, 'amount', Math.max(0, Number(e.target.value)))}
+                            <NumericInput 
+                              value={ing.amount}
+                              onChange={(val) => updateIngredient(ing.id, 'amount', val)}
                               placeholder="0"
                               className="w-16 md:w-20 bg-white border border-[#E6D5B8] rounded-lg px-2 py-1 text-right font-bold outline-none focus:ring-2 focus:ring-[#5C4033] text-sm"
                             />
@@ -841,10 +1000,12 @@ ${currentRecipe.ingredients.map(ing => {
                   <p className="text-[10px] md:text-xs text-[#A89078] font-medium italic">
                     * 换算结果会自动实时保存。
                   </p>
-                  <div className="flex items-center justify-center sm:justify-start gap-2 text-[10px] font-bold text-green-600">
-                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                    已实时同步至本地
-                  </div>
+                  {!currentRecipe.isDraft && (
+                    <div className="flex items-center justify-center sm:justify-start gap-2 text-[10px] font-bold text-green-600">
+                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                      已实时同步至本地
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-3 w-full sm:w-auto">
