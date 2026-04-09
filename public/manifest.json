@@ -1,0 +1,17 @@
+{
+  "name": "烘焙换算助手",
+  "short_name": "烘焙换算",
+  "description": "专业烘焙配方缩放工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F5F2",
+  "theme_color": "#5C4033",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

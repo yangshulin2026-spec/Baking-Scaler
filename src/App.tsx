@@ -57,6 +57,7 @@ interface Ingredient {
 interface Recipe {
   id: string;
   name: string;
+  yieldName: string; // e.g., "450g/条", "6寸/个"
   baseYield: number;
   targetYield: number;
   ingredients: Ingredient[];
@@ -65,28 +66,70 @@ interface Recipe {
 
 const DEFAULT_RECIPES: Recipe[] = [
   {
-    id: 'default-1',
-    name: '吐司面包',
-    baseYield: 2,
+    id: 'shokupan',
+    name: '招牌生吐司',
+    yieldName: '450g/条',
+    baseYield: 1,
     targetYield: 1,
     ingredients: [
-      { id: '1', name: '面粉', amount: 100, unit: 'g' },
-      { id: '2', name: '黄油', amount: 50, unit: 'g' },
-      { id: '3', name: '鸡蛋', amount: 5, unit: '个' },
+      { id: 's1', name: '高筋面粉', amount: 250, unit: 'g' },
+      { id: 's2', name: '细砂糖', amount: 20, unit: 'g' },
+      { id: 's3', name: '盐', amount: 5, unit: 'g' },
+      { id: 's4', name: '耐高糖酵母', amount: 3, unit: 'g' },
+      { id: 's5', name: '全蛋液', amount: 25, unit: 'g' },
+      { id: 's6', name: '牛奶', amount: 160, unit: 'g' },
+      { id: 's7', name: '淡奶油', amount: 30, unit: 'g' },
+      { id: 's8', name: '无盐黄油', amount: 20, unit: 'g' },
     ],
     updatedAt: Date.now()
   },
   {
-    id: 'default-2',
-    name: '戚风蛋糕',
+    id: 'basque',
+    name: '巴斯克芝士蛋糕',
+    yieldName: '6寸/个',
     baseYield: 1,
     targetYield: 1,
     ingredients: [
-      { id: 'ck1', name: '低筋面粉', amount: 50, unit: 'g' },
-      { id: 'ck2', name: '鸡蛋', amount: 3, unit: '个' },
-      { id: 'ck3', name: '细砂糖', amount: 40, unit: 'g' },
-      { id: 'ck4', name: '植物油', amount: 30, unit: 'g' },
-      { id: 'ck5', name: '牛奶', amount: 30, unit: 'g' },
+      { id: 'b1', name: '奶油芝士', amount: 350, unit: 'g' },
+      { id: 'b2', name: '细砂糖', amount: 80, unit: 'g' },
+      { id: 'b3', name: '鸡蛋', amount: 3, unit: '个' },
+      { id: 'b4', name: '淡奶油', amount: 180, unit: 'g' },
+      { id: 'b5', name: '低筋面粉', amount: 10, unit: 'g' },
+      { id: 'b6', name: '香草精', amount: 2, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'bagel',
+    name: '全麦贝果',
+    yieldName: '80g/个',
+    baseYield: 6,
+    targetYield: 6,
+    ingredients: [
+      { id: 'bg1', name: '高筋面粉', amount: 200, unit: 'g' },
+      { id: 'bg2', name: '全麦面粉', amount: 100, unit: 'g' },
+      { id: 'bg3', name: '冰水', amount: 185, unit: 'g' },
+      { id: 'bg4', name: '盐', amount: 5, unit: 'g' },
+      { id: 'bg5', name: '干酵母', amount: 3, unit: 'g' },
+      { id: 'bg6', name: '糖', amount: 10, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'cookie',
+    name: '海盐巧克力曲奇',
+    yieldName: '15块/份',
+    baseYield: 1,
+    targetYield: 1,
+    ingredients: [
+      { id: 'c1', name: '无盐黄油', amount: 110, unit: 'g' },
+      { id: 'c2', name: '红糖', amount: 80, unit: 'g' },
+      { id: 'c3', name: '细砂糖', amount: 40, unit: 'g' },
+      { id: 'c4', name: '全蛋', amount: 50, unit: 'g' },
+      { id: 'c5', name: '中筋面粉', amount: 180, unit: 'g' },
+      { id: 'c6', name: '可可粉', amount: 15, unit: 'g' },
+      { id: 'c7', name: '小苏打', amount: 2, unit: 'g' },
+      { id: 'c8', name: '巧克力豆', amount: 100, unit: 'g' },
     ],
     updatedAt: Date.now()
   }
@@ -109,11 +152,12 @@ export default function App() {
       try {
         let parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Data Migration: Strip English names from existing ingredients (e.g., "面粉 (Flour)" -> "面粉")
-          const migrated = parsed.map((recipe: Recipe) => ({
+          // Data Migration: Strip English names and handle new yieldName field
+          const migrated = parsed.map((recipe: any) => ({
             ...recipe,
             name: recipe.name.replace(/\s*\(.*\)$/, '').trim(),
-            ingredients: recipe.ingredients.map(ing => ({
+            yieldName: recipe.yieldName || '份',
+            ingredients: recipe.ingredients.map((ing: any) => ({
               ...ing,
               name: ing.name.replace(/\s*\(.*\)$/, '').trim()
             }))
@@ -191,6 +235,7 @@ export default function App() {
     const newRecipe: Recipe = {
       id: generateId(),
       name: '新配方',
+      yieldName: '份',
       baseYield: 1,
       targetYield: 1,
       ingredients: [],
@@ -393,10 +438,12 @@ ${currentRecipe.ingredients.map(ing => {
                   >
                     <div className="font-bold truncate pr-8">{recipe.name}</div>
                     <div className={cn(
-                      "text-[10px] mt-1 uppercase tracking-wider font-bold",
+                      "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
                       currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
                     )}>
-                      {recipe.ingredients.length} 种材料
+                      <span>{recipe.ingredients.length} 种材料</span>
+                      <span>•</span>
+                      <span>{recipe.yieldName}</span>
                     </div>
                     
                     <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -507,7 +554,13 @@ ${currentRecipe.ingredients.map(ing => {
                         onChange={(e) => updateCurrentRecipe({ baseYield: Math.max(0, Number(e.target.value)) })}
                         className="w-16 text-xl md:text-2xl font-bold bg-white border border-[#E6D5B8] rounded-xl px-2 py-1 text-center focus:ring-2 focus:ring-[#5C4033] outline-none"
                       />
-                      <span className="font-bold text-[#5C4033]">条/个</span>
+                      <input 
+                        type="text" 
+                        value={currentRecipe.yieldName}
+                        onChange={(e) => updateCurrentRecipe({ yieldName: e.target.value })}
+                        placeholder="单位"
+                        className="w-20 md:w-24 font-bold text-[#5C4033] bg-transparent border-b border-dashed border-[#D4C3B3] outline-none focus:border-[#5C4033] text-sm md:text-base"
+                      />
                     </div>
                   </div>
 
@@ -527,7 +580,7 @@ ${currentRecipe.ingredients.map(ing => {
                         onChange={(e) => updateCurrentRecipe({ targetYield: Math.max(0, Number(e.target.value)) })}
                         className="w-16 text-xl md:text-2xl font-bold bg-white border border-[#E6D5B8] rounded-xl px-2 py-1 text-center focus:ring-2 focus:ring-[#5C4033] outline-none"
                       />
-                      <span className="font-bold text-[#5C4033]">条/个</span>
+                      <span className="font-bold text-[#5C4033]">{currentRecipe.yieldName}</span>
                     </div>
                   </div>
                 </div>
