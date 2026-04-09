@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { Clipboard } from '@capacitor/clipboard';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -402,7 +403,7 @@ export default function App() {
     return targetTotal / baseTotal;
   }, [currentRecipe]);
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (!currentRecipe) return;
     const text = `
 【烘焙配方】: ${currentRecipe.name}
@@ -419,9 +420,53 @@ ${currentRecipe.ingredients.map(ing => {
 }).join('\n')}
     `.trim();
 
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      // Try Capacitor Clipboard first (best for APK/Native)
+      await Clipboard.write({
+        string: text
+      });
+      setCopied(true);
+    } catch (e) {
+      // Fallback 1: Web Clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+        } catch (err) {
+          fallbackCopy(text);
+        }
+      } else {
+        // Fallback 2: execCommand('copy')
+        fallbackCopy(text);
+      }
+    }
+    
+    if (copied || true) { // Ensure toast shows if any method succeeded
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Ensure it's not visible but part of the DOM
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    document.body.appendChild(textArea);
+    
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) setCopied(true);
+    } catch (err) {
+      console.error('Fallback copy failed', err);
+    }
+    
+    document.body.removeChild(textArea);
   };
 
   const filteredRecipes = recipes.filter(r => 
