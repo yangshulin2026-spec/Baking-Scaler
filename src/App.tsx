@@ -57,9 +57,12 @@ interface Ingredient {
 interface Recipe {
   id: string;
   name: string;
-  yieldName: string; // e.g., "450g/条", "6寸/个"
-  baseYield: number;
+  yieldName: string; // e.g., "条", "个", "份"
+  baseYield: number; // Quantity
+  baseSize: number;  // Size per unit (e.g., 450)
   targetYield: number;
+  targetSize: number;
+  sizeUnit: string;  // e.g., "g", "ml", "寸"
   ingredients: Ingredient[];
   updatedAt: number;
 }
@@ -68,9 +71,12 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'shokupan',
     name: '招牌生吐司',
-    yieldName: '450g/条',
+    yieldName: '条',
     baseYield: 1,
+    baseSize: 450,
     targetYield: 1,
+    targetSize: 450,
+    sizeUnit: 'g',
     ingredients: [
       { id: 's1', name: '高筋面粉', amount: 250, unit: 'g' },
       { id: 's2', name: '细砂糖', amount: 20, unit: 'g' },
@@ -86,9 +92,12 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'basque',
     name: '巴斯克芝士蛋糕',
-    yieldName: '6寸/个',
+    yieldName: '个',
     baseYield: 1,
+    baseSize: 6,
     targetYield: 1,
+    targetSize: 6,
+    sizeUnit: '寸',
     ingredients: [
       { id: 'b1', name: '奶油芝士', amount: 350, unit: 'g' },
       { id: 'b2', name: '细砂糖', amount: 80, unit: 'g' },
@@ -102,9 +111,12 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'bagel',
     name: '全麦贝果',
-    yieldName: '80g/个',
+    yieldName: '个',
     baseYield: 6,
+    baseSize: 80,
     targetYield: 6,
+    targetSize: 80,
+    sizeUnit: 'g',
     ingredients: [
       { id: 'bg1', name: '高筋面粉', amount: 200, unit: 'g' },
       { id: 'bg2', name: '全麦面粉', amount: 100, unit: 'g' },
@@ -118,9 +130,12 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'cookie',
     name: '海盐巧克力曲奇',
-    yieldName: '15块/份',
+    yieldName: '份',
     baseYield: 1,
+    baseSize: 15,
     targetYield: 1,
+    targetSize: 15,
+    sizeUnit: '块',
     ingredients: [
       { id: 'c1', name: '无盐黄油', amount: 110, unit: 'g' },
       { id: 'c2', name: '红糖', amount: 80, unit: 'g' },
@@ -139,7 +154,7 @@ export default function App() {
   // Initialize with DEFAULT_RECIPES to prevent blank screen on first render
   const [recipes, setRecipes] = useState<Recipe[]>(DEFAULT_RECIPES);
   const [currentRecipeId, setCurrentRecipeId] = useState<string>(DEFAULT_RECIPES[0].id);
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(true);
   const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
@@ -156,7 +171,10 @@ export default function App() {
           const migrated = parsed.map((recipe: any) => ({
             ...recipe,
             name: recipe.name.replace(/\s*\(.*\)$/, '').trim(),
-            yieldName: recipe.yieldName || '份',
+            yieldName: recipe.yieldName?.includes('/') ? recipe.yieldName.split('/')[1] : (recipe.yieldName || '份'),
+            baseSize: recipe.baseSize || (recipe.yieldName?.includes('/') ? parseFloat(recipe.yieldName) : 1),
+            targetSize: recipe.targetSize || (recipe.yieldName?.includes('/') ? parseFloat(recipe.yieldName) : 1),
+            sizeUnit: recipe.sizeUnit || (recipe.yieldName?.includes('寸') ? '寸' : 'g'),
             ingredients: recipe.ingredients.map((ing: any) => ({
               ...ing,
               name: ing.name.replace(/\s*\(.*\)$/, '').trim()
@@ -164,6 +182,10 @@ export default function App() {
           }));
           setRecipes(migrated);
           setCurrentRecipeId(migrated[0].id);
+        } else {
+          // If empty array, keep defaults
+          setRecipes(DEFAULT_RECIPES);
+          setCurrentRecipeId(DEFAULT_RECIPES[0].id);
         }
       } catch (e) {
         console.error('Failed to parse saved recipes', e);
@@ -193,6 +215,12 @@ export default function App() {
     }
     if (sanitizedUpdates.targetYield !== undefined) {
       sanitizedUpdates.targetYield = Math.max(0, Number(sanitizedUpdates.targetYield) || 0);
+    }
+    if (sanitizedUpdates.baseSize !== undefined) {
+      sanitizedUpdates.baseSize = Math.max(0, Number(sanitizedUpdates.baseSize) || 0);
+    }
+    if (sanitizedUpdates.targetSize !== undefined) {
+      sanitizedUpdates.targetSize = Math.max(0, Number(sanitizedUpdates.targetSize) || 0);
     }
 
     setRecipes(prev => prev.map(r => 
@@ -237,7 +265,10 @@ export default function App() {
       name: '新配方',
       yieldName: '份',
       baseYield: 1,
+      baseSize: 1,
       targetYield: 1,
+      targetSize: 1,
+      sizeUnit: 'g',
       ingredients: [],
       updatedAt: Date.now()
     };
@@ -280,9 +311,25 @@ export default function App() {
     setRecipeToDelete(null);
   };
 
+  const restoreDefaults = () => {
+    if (window.confirm('确定要恢复默认配方吗？这不会删除您自己创建的配方，但会将默认配方重新添加到库中。')) {
+      const existingIds = new Set(recipes.map(r => r.id));
+      const toAdd = DEFAULT_RECIPES.filter(r => !existingIds.has(r.id));
+      if (toAdd.length === 0) {
+        showToast('默认配方已在库中', 'info');
+        return;
+      }
+      setRecipes(prev => [...prev, ...toAdd]);
+      showToast(`已恢复 ${toAdd.length} 个默认配方`);
+    }
+  };
+
   const scaleFactor = useMemo(() => {
-    if (!currentRecipe || currentRecipe.baseYield <= 0) return 0;
-    return currentRecipe.targetYield / currentRecipe.baseYield;
+    if (!currentRecipe) return 0;
+    const baseTotal = currentRecipe.baseYield * currentRecipe.baseSize;
+    const targetTotal = currentRecipe.targetYield * currentRecipe.targetSize;
+    if (baseTotal <= 0) return 0;
+    return targetTotal / baseTotal;
   }, [currentRecipe]);
 
   const copyToClipboard = () => {
@@ -290,8 +337,10 @@ export default function App() {
     const text = `
 【烘焙配方】: ${currentRecipe.name}
 --------------------------
-原份数: ${currentRecipe.baseYield} -> 目标份数: ${currentRecipe.targetYield}
-换算比例: ${scaleFactor.toFixed(2)}
+换算方案: 
+原配方: ${currentRecipe.baseYield}${currentRecipe.yieldName} (单份 ${currentRecipe.baseSize}${currentRecipe.sizeUnit})
+目标: ${currentRecipe.targetYield}${currentRecipe.yieldName} (单份 ${currentRecipe.targetSize}${currentRecipe.sizeUnit})
+换算比例: ${scaleFactor.toFixed(2)}x
 
 材料清单 (换算后):
 ${currentRecipe.ingredients.map(ing => {
@@ -310,7 +359,7 @@ ${currentRecipe.ingredients.map(ing => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F5F2] text-[#2D241E] font-sans selection:bg-[#D4C3B3] flex">
+    <div className="h-screen overflow-hidden bg-[#F8F5F2] text-[#2D241E] font-sans selection:bg-[#D4C3B3] flex">
       {/* Modals */}
       <AnimatePresence>
         {recipeToDelete && (
@@ -375,113 +424,130 @@ ${currentRecipe.ingredients.map(ing => {
         )}
       </AnimatePresence>
 
+      {/* Sidebar Library */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 w-80 bg-white border-r border-[#E6D5B8] z-50 flex flex-col shadow-2xl transition-transform duration-300 lg:relative lg:translate-x-0 lg:shadow-none",
+        isLibraryOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="p-6 border-b border-[#F0E6D2] flex items-center justify-between">
+          <h2 className="text-xl font-black text-[#5C4033] flex items-center gap-2">
+            <BookOpen size={20} /> 配方库
+          </h2>
+          <button onClick={() => setIsLibraryOpen(false)} className="lg:hidden p-1 hover:bg-[#F5F1E9] rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4C3B3]" size={16} />
+            <input 
+              type="text" 
+              placeholder="搜索配方..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#FAF7F2] border border-[#E6D5B8] rounded-xl outline-none focus:ring-2 focus:ring-[#5C4033] text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {filteredRecipes.map(recipe => (
+            <div
+              key={recipe.id}
+              onClick={() => {
+                setCurrentRecipeId(recipe.id);
+                if (window.innerWidth < 1024) setIsLibraryOpen(false);
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setCurrentRecipeId(recipe.id);
+                  if (window.innerWidth < 1024) setIsLibraryOpen(false);
+                }
+              }}
+              className={cn(
+                "w-full text-left p-4 rounded-2xl border transition-all group relative cursor-pointer outline-none focus:ring-2 focus:ring-[#5C4033] focus:ring-offset-2",
+                currentRecipeId === recipe.id 
+                  ? "bg-[#5C4033] border-[#5C4033] text-white shadow-lg" 
+                  : "bg-white border-[#F0E6D2] hover:border-[#D4C3B3] text-[#5C4033]"
+              )}
+            >
+              <div className="font-bold truncate pr-8">{recipe.name}</div>
+              <div className={cn(
+                "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
+                currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
+              )}>
+                <span>{recipe.ingredients.length} 种材料</span>
+                <span>•</span>
+                <span>{recipe.baseYield}{recipe.yieldName} × {recipe.baseSize}{recipe.sizeUnit}</span>
+              </div>
+              
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button 
+                  onClick={(e) => deleteRecipe(recipe.id, e)}
+                  className={cn(
+                    "p-2 transition-all rounded-full",
+                    currentRecipeId === recipe.id 
+                      ? "text-white/40 hover:text-white hover:bg-white/10" 
+                      : "text-[#D4C3B3] hover:text-red-500 hover:bg-red-50"
+                  )}
+                  title="删除配方"
+                >
+                  <Trash2 size={14} />
+                </button>
+                <ChevronRight size={16} className={cn(
+                  "transition-transform",
+                  currentRecipeId === recipe.id ? "text-white" : "text-[#D4C3B3] group-hover:translate-x-1"
+                )} />
+              </div>
+            </div>
+          ))}
+          
+          {filteredRecipes.length === 0 && (
+            <div className="text-center py-8 px-4 border-2 border-dashed border-[#E6D5B8] rounded-2xl">
+              <p className="text-xs text-[#A89078] font-medium">未找到匹配配方</p>
+              <button 
+                onClick={restoreDefaults}
+                className="mt-2 text-[10px] font-bold text-[#5C4033] underline"
+              >
+                恢复默认配方
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4 border-t border-[#F0E6D2] space-y-2">
+          <button 
+            onClick={createNewRecipe}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#FAF7F2] border-2 border-dashed border-[#E6D5B8] rounded-2xl text-[#8B5E3C] font-bold hover:bg-[#F5F1E9] transition-colors"
+          >
+            <Plus size={18} /> 新建配方
+          </button>
+          <button 
+            onClick={restoreDefaults}
+            className="w-full flex items-center justify-center gap-2 py-2 text-[10px] font-bold text-[#A89078] hover:text-[#5C4033] transition-colors"
+          >
+            <RotateCcw size={12} /> 恢复默认配方
+          </button>
+        </div>
+      </aside>
+
+      {/* Backdrop for mobile */}
       <AnimatePresence>
         {isLibraryOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsLibraryOpen(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
-            />
-            <motion.aside 
-              initial={{ x: -300 }}
-              animate={{ x: 0 }}
-              exit={{ x: -300 }}
-              className="fixed inset-y-0 left-0 w-80 bg-white border-r border-[#E6D5B8] z-50 flex flex-col shadow-2xl lg:relative lg:shadow-none"
-            >
-              <div className="p-6 border-b border-[#F0E6D2] flex items-center justify-between">
-                <h2 className="text-xl font-black text-[#5C4033] flex items-center gap-2">
-                  <BookOpen size={20} /> 配方库
-                </h2>
-                <button onClick={() => setIsLibraryOpen(false)} className="lg:hidden p-1 hover:bg-[#F5F1E9] rounded-full">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4C3B3]" size={16} />
-                  <input 
-                    type="text" 
-                    placeholder="搜索配方..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-[#FAF7F2] border border-[#E6D5B8] rounded-xl outline-none focus:ring-2 focus:ring-[#5C4033] text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                {filteredRecipes.map(recipe => (
-                  <div
-                    key={recipe.id}
-                    onClick={() => {
-                      setCurrentRecipeId(recipe.id);
-                      setIsLibraryOpen(false);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        setCurrentRecipeId(recipe.id);
-                        setIsLibraryOpen(false);
-                      }
-                    }}
-                    className={cn(
-                      "w-full text-left p-4 rounded-2xl border transition-all group relative cursor-pointer outline-none focus:ring-2 focus:ring-[#5C4033] focus:ring-offset-2",
-                      currentRecipeId === recipe.id 
-                        ? "bg-[#5C4033] border-[#5C4033] text-white shadow-lg" 
-                        : "bg-white border-[#F0E6D2] hover:border-[#D4C3B3] text-[#5C4033]"
-                    )}
-                  >
-                    <div className="font-bold truncate pr-8">{recipe.name}</div>
-                    <div className={cn(
-                      "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
-                      currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
-                    )}>
-                      <span>{recipe.ingredients.length} 种材料</span>
-                      <span>•</span>
-                      <span>{recipe.yieldName}</span>
-                    </div>
-                    
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <button 
-                        onClick={(e) => deleteRecipe(recipe.id, e)}
-                        className={cn(
-                          "p-2 transition-all rounded-full",
-                          currentRecipeId === recipe.id 
-                            ? "text-white/40 hover:text-white hover:bg-white/10" 
-                            : "text-[#D4C3B3] hover:text-red-500 hover:bg-red-50"
-                        )}
-                        title="删除配方"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <ChevronRight size={16} className={cn(
-                        "transition-transform",
-                        currentRecipeId === recipe.id ? "text-white" : "text-[#D4C3B3] group-hover:translate-x-1"
-                      )} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-4 border-t border-[#F0E6D2]">
-                <button 
-                  onClick={createNewRecipe}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-[#FAF7F2] border-2 border-dashed border-[#E6D5B8] rounded-2xl text-[#8B5E3C] font-bold hover:bg-[#F5F1E9] transition-colors"
-                >
-                  <Plus size={18} /> 新建配方
-                </button>
-              </div>
-            </motion.aside>
-          </>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsLibraryOpen(false)}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          />
         )}
       </AnimatePresence>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Header Area */}
         <header className="bg-white border-b border-[#E6D5B8] py-4 px-6 sticky top-0 z-20 shadow-sm">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -543,55 +609,108 @@ ${currentRecipe.ingredients.map(ing => {
 
               {/* Yield Controls */}
               <div className="p-6 md:p-8 border-b border-[#F0E6D2] bg-[#FAF7F2]">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-center">
-                  <div className="space-y-1 md:space-y-2 text-center md:text-left">
-                    <label className="text-[10px] font-black text-[#8B5E3C] uppercase tracking-[0.2em]">原始份数</label>
-                    <div className="flex items-center justify-center md:justify-start gap-2">
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={currentRecipe.baseYield}
-                        onChange={(e) => updateCurrentRecipe({ baseYield: Math.max(0, Number(e.target.value)) })}
-                        className="w-16 text-xl md:text-2xl font-bold bg-white border border-[#E6D5B8] rounded-xl px-2 py-1 text-center focus:ring-2 focus:ring-[#5C4033] outline-none"
-                      />
-                      <input 
-                        type="text" 
-                        value={currentRecipe.yieldName}
-                        onChange={(e) => updateCurrentRecipe({ yieldName: e.target.value })}
-                        placeholder="单位"
-                        className="w-20 md:w-24 font-bold text-[#5C4033] bg-transparent border-b border-dashed border-[#D4C3B3] outline-none focus:border-[#5C4033] text-sm md:text-base"
-                      />
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                  {/* Base Side */}
+                  <div className="flex-1 w-full space-y-3">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-black text-[#8B5E3C] uppercase tracking-[0.2em]">原始配方规格</label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
+                          <input 
+                            type="number" 
+                            min="0"
+                            value={currentRecipe.baseYield}
+                            onChange={(e) => updateCurrentRecipe({ baseYield: Number(e.target.value) })}
+                            className="w-full text-lg font-bold bg-transparent outline-none"
+                          />
+                          <input 
+                            type="text" 
+                            value={currentRecipe.yieldName}
+                            onChange={(e) => updateCurrentRecipe({ yieldName: e.target.value })}
+                            placeholder="条"
+                            className="w-8 text-xs font-bold text-[#8B5E3C] bg-transparent border-l border-[#E6D5B8] ml-2 pl-2 outline-none"
+                          />
+                        </div>
+                        <p className="text-[9px] text-[#A89078] font-bold text-center">数量</p>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
+                          <input 
+                            type="number" 
+                            min="0"
+                            value={currentRecipe.baseSize}
+                            onChange={(e) => updateCurrentRecipe({ baseSize: Number(e.target.value) })}
+                            className="w-full text-lg font-bold bg-transparent outline-none"
+                          />
+                          <input 
+                            type="text" 
+                            value={currentRecipe.sizeUnit}
+                            onChange={(e) => updateCurrentRecipe({ sizeUnit: e.target.value })}
+                            placeholder="g"
+                            className="w-8 text-xs font-bold text-[#8B5E3C] bg-transparent border-l border-[#E6D5B8] ml-2 pl-2 outline-none"
+                          />
+                        </div>
+                        <p className="text-[9px] text-[#A89078] font-bold text-center">单份规格</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-center py-1 md:py-0">
+                  {/* Arrow */}
+                  <div className="flex flex-col items-center">
                     <div className="bg-[#5C4033] text-white p-2 rounded-full shadow-lg rotate-90 md:rotate-0">
                       <ArrowRight size={18} />
                     </div>
+                    <div className="mt-2 text-[10px] font-black text-[#5C4033] bg-[#E6D5B8] px-2 py-0.5 rounded uppercase">换算</div>
                   </div>
 
-                  <div className="space-y-1 md:space-y-2 text-center md:text-right">
-                    <label className="text-[10px] font-black text-[#8B5E3C] uppercase tracking-[0.2em]">目标份数</label>
-                    <div className="flex items-center justify-center md:justify-end gap-2">
-                      <input 
-                        type="number" 
-                        min="0"
-                        value={currentRecipe.targetYield}
-                        onChange={(e) => updateCurrentRecipe({ targetYield: Math.max(0, Number(e.target.value)) })}
-                        className="w-16 text-xl md:text-2xl font-bold bg-white border border-[#E6D5B8] rounded-xl px-2 py-1 text-center focus:ring-2 focus:ring-[#5C4033] outline-none"
-                      />
-                      <span className="font-bold text-[#5C4033]">{currentRecipe.yieldName}</span>
+                  {/* Target Side */}
+                  <div className="flex-1 w-full space-y-3">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] font-black text-[#8B5E3C] uppercase tracking-[0.2em]">目标制作规格</label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
+                          <input 
+                            type="number" 
+                            min="0"
+                            value={currentRecipe.targetYield}
+                            onChange={(e) => updateCurrentRecipe({ targetYield: Number(e.target.value) })}
+                            className="w-full text-lg font-bold bg-transparent outline-none"
+                          />
+                          <span className="text-xs font-bold text-[#8B5E3C] ml-2 pl-2 border-l border-[#E6D5B8]">{currentRecipe.yieldName}</span>
+                        </div>
+                        <p className="text-[9px] text-[#A89078] font-bold text-center">数量</p>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center bg-white border border-[#E6D5B8] rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5C4033]">
+                          <input 
+                            type="number" 
+                            min="0"
+                            value={currentRecipe.targetSize}
+                            onChange={(e) => updateCurrentRecipe({ targetSize: Number(e.target.value) })}
+                            className="w-full text-lg font-bold bg-transparent outline-none"
+                          />
+                          <span className="text-xs font-bold text-[#8B5E3C] ml-2 pl-2 border-l border-[#E6D5B8]">{currentRecipe.sizeUnit}</span>
+                        </div>
+                        <p className="text-[9px] text-[#A89078] font-bold text-center">单份规格</p>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-6 flex justify-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#E6D5B8]/30 rounded-full border border-[#E6D5B8]">
-                    <Scale size={16} className="text-[#5C4033]" />
-                    <span className="text-sm font-bold text-[#5C4033]">
-                      换算比例: <span className="text-lg">{scaleFactor.toFixed(2)}x</span>
+                <div className="mt-8 flex flex-col items-center gap-2">
+                  <div className="inline-flex items-center gap-2 px-6 py-2 bg-[#5C4033] rounded-full shadow-xl border border-[#4A3329]">
+                    <Scale size={16} className="text-[#E6D5B8]" />
+                    <span className="text-sm font-bold text-white">
+                      换算比例: <span className="text-xl text-[#E6D5B8]">{scaleFactor.toFixed(2)}x</span>
                     </span>
                   </div>
+                  <p className="text-[10px] text-[#8B5E3C] font-bold opacity-60">
+                    总重: {currentRecipe.baseYield * currentRecipe.baseSize}{currentRecipe.sizeUnit} → {currentRecipe.targetYield * currentRecipe.targetSize}{currentRecipe.sizeUnit}
+                  </p>
                 </div>
               </div>
 
