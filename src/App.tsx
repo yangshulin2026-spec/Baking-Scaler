@@ -114,6 +114,92 @@ interface Recipe {
   isDraft?: boolean; // New field to track unsaved recipes
 }
 
+// App Icon Component based on the new design
+const AppIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <defs>
+      <linearGradient id="bg-grad" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FFD97D" />
+        <stop offset="1" stopColor="#FFB347" />
+      </linearGradient>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+        <feOffset dx="0" dy="2" result="offsetblur" />
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="0.3" />
+        </feComponentTransfer>
+        <feMerge>
+          <feMergeNode />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+    
+    {/* Background */}
+    <rect width="200" height="200" rx="48" fill="url(#bg-grad)" />
+    
+    {/* Chef Character */}
+    <g filter="url(#shadow)">
+      {/* Body/Uniform */}
+      <path d="M40 180C40 150 60 140 100 140C140 140 160 150 160 180V200H40V180Z" fill="white" />
+      <path d="M100 140V200" stroke="#F0F0F0" strokeWidth="1" />
+      <circle cx="115" cy="155" r="2.5" fill="#D4C3B3" />
+      <circle cx="115" cy="175" r="2.5" fill="#D4C3B3" />
+      <circle cx="115" cy="195" r="2.5" fill="#D4C3B3" />
+      <circle cx="135" cy="155" r="2.5" fill="#D4C3B3" />
+      <circle cx="135" cy="175" r="2.5" fill="#D4C3B3" />
+      <circle cx="135" cy="195" r="2.5" fill="#D4C3B3" />
+      
+      {/* Face */}
+      <circle cx="100" cy="100" r="45" fill="#FFE0BD" />
+      <path d="M65 105C65 105 70 135 100 135C130 135 135 105 135 105" fill="#FFE0BD" />
+      
+      {/* Hair */}
+      <path d="M60 85C60 70 80 60 100 60C120 60 140 70 140 85V100C140 100 130 90 100 90C70 90 60 100 60 100V85Z" fill="#4A3329" />
+      
+      {/* Chef Hat */}
+      <path d="M65 65H135V85H65V65Z" fill="white" />
+      <path d="M60 65C60 30 140 30 140 65" fill="white" />
+      <path d="M75 40C75 25 125 25 125 40" fill="white" />
+      
+      {/* Eyes */}
+      <circle cx="85" cy="105" r="4" fill="#2D241E" />
+      <circle cx="115" cy="105" r="4" fill="#2D241E" />
+      
+      {/* Smile */}
+      <path d="M85 120C85 120 100 130 115 120" stroke="#E67E22" strokeWidth="3" strokeLinecap="round" fill="none" />
+    </g>
+    
+    {/* Whisk */}
+    <g transform="translate(35, 135) rotate(-20)" filter="url(#shadow)">
+      <rect x="8" y="35" width="10" height="30" rx="3" fill="#95A5A6" />
+      <path d="M0 35C0 10 26 10 26 35" stroke="#BDC3C7" strokeWidth="3" fill="none" />
+      <path d="M6 35C6 15 20 15 20 35" stroke="#BDC3C7" strokeWidth="3" fill="none" />
+      <path d="M13 35V10" stroke="#BDC3C7" strokeWidth="2" fill="none" />
+    </g>
+    
+    {/* Oven & Bread */}
+    <g transform="translate(130, 80)" filter="url(#shadow)">
+      <rect width="60" height="55" rx="8" fill="#E6D5B8" stroke="#D4C3B3" strokeWidth="2" />
+      <rect x="6" y="6" width="48" height="32" rx="4" fill="#2D241E" />
+      {/* Bread */}
+      <path d="M15 28C15 18 45 18 45 28H15Z" fill="#D35400" />
+      <path d="M20 22L22 26M28 21L30 25M36 22L38 26" stroke="#A04000" strokeWidth="1" />
+      {/* Oven Handle */}
+      <rect x="15" y="44" width="30" height="4" rx="2" fill="#5C4033" />
+    </g>
+    
+    {/* Golden Conversion Arrows */}
+    <g stroke="#F1C40F" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" filter="url(#shadow)">
+      <path d="M140 45C160 45 180 60 180 85" />
+      <path d="M170 78L180 88L190 78" />
+      
+      <path d="M180 145C180 170 160 185 140 185" />
+      <path d="M148 175L138 185L148 195" />
+    </g>
+  </svg>
+);
+
 const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'shokupan',
@@ -203,7 +289,6 @@ export default function App() {
   const [currentRecipeId, setCurrentRecipeId] = useState<string>(DEFAULT_RECIPES[0].id);
   const [isLibraryOpen, setIsLibraryOpen] = useState(true);
   const [isIngredientPickerOpen, setIsIngredientPickerOpen] = useState(false);
-  const [isIconPreviewOpen, setIsIconPreviewOpen] = useState(false); // New state for icon preview
   const [searchTerm, setSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -424,91 +509,6 @@ ${currentRecipe.ingredients.map(ing => {
 
   return (
     <div className="h-screen overflow-hidden bg-[#F8F5F2] text-[#2D241E] font-sans selection:bg-[#D4C3B3] flex">
-      {/* Icon Preview Modal */}
-      <AnimatePresence>
-        {isIconPreviewOpen && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsIconPreviewOpen(false)}
-              className="absolute inset-0 bg-[#5C4033]/60 backdrop-blur-md"
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-white rounded-[2.5rem] p-8 md:p-12 max-w-lg w-full shadow-2xl space-y-8 overflow-hidden"
-            >
-              {/* Decorative Background */}
-              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-[#FAF7F2] rounded-full blur-3xl opacity-50" />
-              
-              <div className="text-center space-y-2 relative">
-                <h3 className="text-2xl font-black text-[#5C4033]">新图标设计方案</h3>
-                <p className="text-[#8B5E3C] text-sm">融合了“厨师帽 (烘焙)”与“秤/循环箭头 (换算)”</p>
-              </div>
-
-              <div className="flex flex-col items-center gap-8 relative">
-                {/* Large Icon Preview */}
-                <div className="w-48 h-48 bg-[#FAF7F2] rounded-[3rem] shadow-inner flex items-center justify-center p-8 border-4 border-white">
-                  <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-xl">
-                    <circle cx="100" cy="100" r="90" fill="#FDFBF7" stroke="#E6D5B8" stroke-width="2"/>
-                    <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
-                    <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
-                    <path d="M85 90H115M100 90V80M85 90L80 105H90L85 90ZM115 90L110 105H120L115 90Z" stroke="#FDFBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M45 100C45 69.6 69.6 45 100 45M155 100C155 130.4 130.4 155 100 155" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M40 90L45 100L50 90M150 110L155 100L160 110" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-
-                {/* Context Previews */}
-                <div className="flex gap-6 items-end">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-16 h-16 bg-[#FAF7F2] rounded-2xl shadow-md flex items-center justify-center p-3 border-2 border-white">
-                      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                        <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
-                        <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
-                        <path d="M85 90H115M100 90V80M85 90L80 105H90L85 90ZM115 90L110 105H120L115 90Z" stroke="#FDFBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M45 100C45 69.6 69.6 45 100 45M155 100C155 130.4 130.4 155 100 155" stroke="#D4A373" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                    <span className="text-[10px] font-bold text-[#A89078]">手机桌面</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 bg-[#FAF7F2] rounded-xl shadow-sm flex items-center justify-center p-2 border border-white">
-                      <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                        <path d="M100 45C75 45 60 65 60 85C60 95 65 100 70 105V135H130V105C135 100 140 95 140 85C140 65 125 45 100 45Z" fill="#5C4033"/>
-                        <rect x="70" y="135" width="60" height="15" rx="4" fill="#D4A373"/>
-                      </svg>
-                    </div>
-                    <span className="text-[10px] font-bold text-[#A89078]">浏览器标签</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  onClick={() => setIsIconPreviewOpen(false)}
-                  className="flex-1 py-4 bg-[#FAF7F2] text-[#8B5E3C] font-bold rounded-2xl hover:bg-[#F5F1E9] transition-colors"
-                >
-                  再想想
-                </button>
-                <button 
-                  onClick={() => {
-                    setIsIconPreviewOpen(false);
-                    showToast('图标已应用 (预览环境限制，部分位置需刷新生效)');
-                  }}
-                  className="flex-1 py-4 bg-[#5C4033] text-white font-bold rounded-2xl hover:bg-[#4A3329] transition-all shadow-xl shadow-[#5C4033]/20"
-                >
-                  就用这个！
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Modals */}
       <AnimatePresence>
         {recipeToDelete && (
@@ -706,32 +706,26 @@ ${currentRecipe.ingredients.map(ing => {
         {/* Header Area */}
         <header className="bg-white border-b border-[#E6D5B8] py-4 px-6 sticky top-0 z-20 shadow-sm">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setIsLibraryOpen(true)}
-                className="p-2 bg-[#FAF7F2] border border-[#E6D5B8] rounded-lg text-[#5C4033] hover:bg-[#F5F1E9] transition-colors"
+                className="p-2 bg-[#FAF7F2] border border-[#E6D5B8] rounded-xl text-[#5C4033] hover:bg-[#F5F1E9] transition-colors shadow-sm"
                 title="打开配方库"
               >
                 <BookOpen size={20} />
               </button>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold tracking-tight text-[#5C4033]">烘焙换算助手</h1>
+              <div className="flex items-center gap-3">
+                <AppIcon className="w-10 h-10 drop-shadow-sm" />
+                <h1 className="text-xl font-black tracking-tight text-[#5C4033] hidden sm:block">烘焙换算助手</h1>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setIsIconPreviewOpen(true)}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#FAF7F2] border border-[#E6D5B8] text-[#5C4033] rounded-xl font-bold text-sm hover:bg-[#F5F1E9] transition-all"
-              >
-                <ChefHat size={18} />
-                <span>查看新图标</span>
-              </button>
+            <div className="flex gap-3">
               <button 
                 onClick={createNewRecipe}
-                className="flex items-center gap-2 px-4 py-2 bg-[#5C4033] text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#4A3329] transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#5C4033] text-white rounded-xl font-bold text-sm shadow-lg shadow-[#5C4033]/20 hover:bg-[#4A3329] transition-all active:scale-95"
               >
                 <Plus size={18} />
-                <span>新建配方</span>
+                <span className="hidden xs:inline">新建配方</span>
               </button>
               <button 
                 onClick={() => window.print()}
