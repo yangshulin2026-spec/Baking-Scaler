@@ -1,5 +1,5 @@
 {
-  "name": "Baking Scaler",
-  "description": "A simple and elegant tool for bakers to scale recipes based on desired yield. No AI required, just pure math.",
+  "name": "烘焙换算助手",
+  "description": "一个简单优雅的烘焙配方缩放工具，帮助烘焙爱好者根据目标产量轻松换算配方。",
   "requestFramePermissions": []
 }

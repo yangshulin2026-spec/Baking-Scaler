@@ -34,20 +34,11 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
       - name: Build Android APK
         run: |
           cd android
-          # If wrapper is corrupt, try to use system gradle to build or fix it
-          if ! jar tf gradle/wrapper/gradle-wrapper.jar > /dev/null 2>&1; then
-            echo "Gradle wrapper is corrupt, attempting to build with system gradle..."
-            gradle assembleDebug
-          else
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          fi
+          # Use the pre-installed gradle on the runner instead of the potentially corrupt/untrusted wrapper
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
