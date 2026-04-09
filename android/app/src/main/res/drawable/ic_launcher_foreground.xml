@@ -3,19 +3,17 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Main Bread/Chef Hat Shape -->
+    <!-- Toast Shape -->
     <path
-        android:fillColor="#F8F5F2"
-        android:pathData="M54,30C44,30 38,38 38,46C38,47 38.1,48 38.2,49C34,52 30,58 30,66C30,76 38,82 46,82H62C70,82 78,76 78,66C78,58 74,52 69.8,49C69.9,48 70,47 70,46C70,38 64,30 54,30Z" />
-    <!-- Scale/Plus Mark -->
+        android:fillColor="#F4D03F"
+        android:pathData="M34,38c0,-8 8,-12 20,-12c12,0 20,4 20,12v42c0,4 -4,8 -8,8h-24c-4,0 -8,-4 -8,-8v-42z" />
     <path
-        android:strokeColor="#5C4033"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M46,66H62" />
-    <path
-        android:strokeColor="#5C4033"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:pathData="M54,58V74" />
+        android:fillColor="#D4AC0D"
+        android:pathData="M34,38c0,-8 8,-12 20,-12c12,0 20,4 20,12v4h-40v-4z" />
+    <!-- Whisk (Diagonal) -->
+    <group android:rotation="-30" android:pivotX="80" android:pivotY="80">
+        <path android:fillColor="#F8F5F2" android:pathData="M78,80h4c2,0 4,2 4,4v16c0,2 -2,4 -4,4h-4c-2,0 -4,-2 -4,-4v-16c0,-2 2,-4 4,-4z" />
+        <path android:strokeColor="#F8F5F2" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M80,60c-8,0 -12,10 0,20c12,-10 8,-20 0,-20z" />
+        <path android:strokeColor="#F8F5F2" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M80,60v20" />
+    </group>
 </vector>

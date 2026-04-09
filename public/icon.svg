@@ -1,9 +1,14 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="128" fill="#5C4033"/>
-  <path d="M156 320C156 280 180 240 216 220C216 180 240 140 280 140C320 140 344 180 344 220C380 240 404 280 404 320C404 360 380 400 344 420H216C180 400 156 360 156 320Z" fill="#F8F5F2" fill-opacity="0.2"/>
-  <path d="M256 160C210 160 180 200 180 240C180 245 180.5 250 181 255C160 270 140 300 140 340C140 390 180 420 220 420H292C332 420 372 390 372 340C372 300 352 270 331 255C331.5 250 332 245 332 240C332 200 302 160 256 160Z" fill="#F8F5F2"/>
-  <rect x="200" y="380" width="112" height="12" rx="6" fill="#5C4033" fill-opacity="0.3"/>
-  <circle cx="256" cy="240" r="20" fill="#5C4033" fill-opacity="0.1"/>
-  <path d="M210 340H302" stroke="#5C4033" stroke-width="12" stroke-linecap="round"/>
-  <path d="M256 310V370" stroke="#5C4033" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Bread Loaf (Toast) -->
+  <path d="M160 200C160 160 200 140 256 140C312 140 352 160 352 200V400C352 420 332 440 312 440H200C180 440 160 420 160 400V200Z" fill="#F4D03F"/>
+  <path d="M160 200C160 160 200 140 256 140C312 140 352 160 352 200V230H160V200Z" fill="#D4AC0D"/>
+  
+  <!-- Whisk (Diagonal) -->
+  <g transform="translate(380, 380) rotate(-30) translate(-380, -380)">
+    <rect x="370" y="380" width="20" height="80" rx="10" fill="#F8F5F2"/>
+    <path d="M380 280 C340 280, 320 330, 380 380 C440 330, 420 280, 380 280" stroke="#F8F5F2" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <line x1="380" y1="280" x2="380" y2="380" stroke="#F8F5F2" stroke-width="10" stroke-linecap="round"/>
+  </g>
 </svg>
