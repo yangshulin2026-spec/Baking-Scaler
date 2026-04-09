@@ -1,14 +1,17 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="128" fill="#5C4033"/>
   
-  <!-- Bread Loaf (Toast) -->
-  <path d="M160 200C160 160 200 140 256 140C312 140 352 160 352 200V400C352 420 332 440 312 440H200C180 440 160 420 160 400V200Z" fill="#F4D03F"/>
-  <path d="M160 200C160 160 200 140 256 140C312 140 352 160 352 200V230H160V200Z" fill="#D4AC0D"/>
+  <!-- Cake Base -->
+  <path d="M140 320C140 300 160 280 180 280H332C352 280 372 300 372 320V420C372 430 362 440 352 440H160C150 440 140 430 140 420V320Z" fill="#FAD7A0"/>
   
-  <!-- Whisk (Diagonal) -->
-  <g transform="translate(380, 380) rotate(-30) translate(-380, -380)">
-    <rect x="370" y="380" width="20" height="80" rx="10" fill="#F8F5F2"/>
-    <path d="M380 280 C340 280, 320 330, 380 380 C440 330, 420 280, 380 280" stroke="#F8F5F2" stroke-width="10" fill="none" stroke-linecap="round"/>
-    <line x1="380" y1="280" x2="380" y2="380" stroke="#F8F5F2" stroke-width="10" stroke-linecap="round"/>
-  </g>
+  <!-- Cake Layers -->
+  <rect x="140" y="340" width="232" height="15" fill="#D35400" opacity="0.3"/>
+  <rect x="140" y="380" width="232" height="15" fill="#D35400" opacity="0.3"/>
+  
+  <!-- Frosting Top -->
+  <path d="M140 300C140 280 160 260 180 260H332C352 260 372 280 372 300V330C372 330 350 310 332 310C314 310 296 330 276 330C256 330 238 310 220 310C202 310 180 330 160 330C140 330 140 300 140 300Z" fill="#F8F5F2"/>
+  
+  <!-- Cherry -->
+  <circle cx="256" cy="230" r="25" fill="#E74C3C"/>
+  <path d="M256 205C256 180 276 170 290 160" stroke="#2ECC71" stroke-width="8" stroke-linecap="round"/>
 </svg>

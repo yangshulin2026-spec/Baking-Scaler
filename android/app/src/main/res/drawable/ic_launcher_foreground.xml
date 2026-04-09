@@ -3,17 +3,18 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Toast Shape -->
+    <!-- Cake Base -->
     <path
-        android:fillColor="#F4D03F"
-        android:pathData="M34,38c0,-8 8,-12 20,-12c12,0 20,4 20,12v42c0,4 -4,8 -8,8h-24c-4,0 -8,-4 -8,-8v-42z" />
+        android:fillColor="#FAD7A0"
+        android:pathData="M30,62c0,-4 4,-8 8,-8h32c4,0 8,4 8,8v20c0,2 -2,4 -4,4h-40c-2,0 -4,-2 -4,-4v-20z" />
+    <!-- Layers -->
+    <path android:fillColor="#D35400" android:fillAlpha="0.3" android:pathData="M30,66h48v3h-48z" />
+    <path android:fillColor="#D35400" android:fillAlpha="0.3" android:pathData="M30,74h48v3h-48z" />
+    <!-- Frosting -->
     <path
-        android:fillColor="#D4AC0D"
-        android:pathData="M34,38c0,-8 8,-12 20,-12c12,0 20,4 20,12v4h-40v-4z" />
-    <!-- Whisk (Diagonal) -->
-    <group android:rotation="-30" android:pivotX="80" android:pivotY="80">
-        <path android:fillColor="#F8F5F2" android:pathData="M78,80h4c2,0 4,2 4,4v16c0,2 -2,4 -4,4h-4c-2,0 -4,-2 -4,-4v-16c0,-2 2,-4 4,-4z" />
-        <path android:strokeColor="#F8F5F2" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M80,60c-8,0 -12,10 0,20c12,-10 8,-20 0,-20z" />
-        <path android:strokeColor="#F8F5F2" android:strokeWidth="2" android:strokeLineCap="round" android:pathData="M80,60v20" />
-    </group>
+        android:fillColor="#F8F5F2"
+        android:pathData="M30,58c0,-4 4,-8 8,-8h32c4,0 8,4 8,8v6c0,0 -5,-4 -9,-4c-4,0 -8,4 -12,4c-4,0 -8,-4 -12,-4c-4,0 -9,4 -13,4v-6z" />
+    <!-- Cherry -->
+    <path android:fillColor="#E74C3C" android:pathData="M54,48a5,5 0 1,0 0,-10a5,5 0 1,0 0,10z" />
+    <path android:strokeColor="#2ECC71" android:strokeWidth="1.5" android:strokeLineCap="round" android:pathData="M54,43c0,-5 4,-7 7,-9" />
 </vector>
