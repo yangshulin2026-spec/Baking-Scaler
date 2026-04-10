@@ -122,6 +122,44 @@ const AppIcon = ({ className }: { className?: string }) => (
   </div>
 );
 
+// Splash Screen Component for a smooth app entry
+const SplashScreen = () => (
+  <motion.div
+    initial={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.8, ease: "easeInOut" }}
+    className="fixed inset-0 z-[100] bg-[#F8F5F2] flex flex-col items-center justify-center"
+  >
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="flex flex-col items-center gap-6"
+    >
+      <div className="w-24 h-24 bg-[#5C4033] rounded-3xl flex items-center justify-center shadow-2xl shadow-[#5C4033]/20">
+        <Scale size={48} className="text-white" />
+      </div>
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-black text-[#5C4033] tracking-tight">烘焙换算助手</h1>
+        <p className="text-sm text-[#8B5E3C] font-medium opacity-60">让每一份配方都恰到好处</p>
+      </div>
+    </motion.div>
+    
+    <motion.div 
+      initial={{ width: 0 }}
+      animate={{ width: 120 }}
+      transition={{ duration: 1.5, ease: "easeInOut", delay: 0.5 }}
+      className="absolute bottom-20 h-1 bg-[#5C4033]/10 rounded-full overflow-hidden"
+    >
+      <motion.div 
+        animate={{ x: [-120, 120] }}
+        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        className="w-1/2 h-full bg-[#5C4033]"
+      />
+    </motion.div>
+  </motion.div>
+);
+
 const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'shokupan',
@@ -214,6 +252,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   // Load recipes from local storage on mount
   useEffect(() => {
@@ -247,6 +286,10 @@ export default function App() {
       }
     }
     setIsLoaded(true);
+    
+    // Simulate a short delay for the splash screen transition
+    const timer = setTimeout(() => setIsAppReady(true), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Save recipes to local storage whenever they change
@@ -475,6 +518,9 @@ ${currentRecipe.ingredients.map(ing => {
 
   return (
     <div className="h-screen overflow-hidden bg-[#F8F5F2] text-[#2D241E] font-sans selection:bg-[#D4C3B3] flex">
+      <AnimatePresence>
+        {!isAppReady && <SplashScreen key="splash" />}
+      </AnimatePresence>
       {/* Modals */}
       <AnimatePresence>
         {recipeToDelete && (
