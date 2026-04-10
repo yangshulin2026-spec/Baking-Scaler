@@ -273,7 +273,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'bagel',
     name: '全麦贝果',
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1533777324565-a040eb52facd?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 6,
     baseSize: 80,
@@ -352,6 +352,48 @@ const DEFAULT_RECIPES: Recipe[] = [
       { id: 'et5', name: '炼乳', amount: 10, unit: 'g' },
       { id: 'et6', name: '低筋面粉', amount: 10, unit: 'g' },
       { id: 'et7', name: '成品挞皮', amount: 12, unit: '个' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'croissant',
+    name: '法式羊角面包',
+    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 10,
+    baseSize: 65,
+    targetYield: 10,
+    targetSize: 65,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'cr1', name: '高筋面粉', amount: 500, unit: 'g' },
+      { id: 'cr2', name: '细砂糖', amount: 60, unit: 'g' },
+      { id: 'cr3', name: '盐', amount: 10, unit: 'g' },
+      { id: 'cr4', name: '干酵母', amount: 10, unit: 'g' },
+      { id: 'cr5', name: '冰水', amount: 280, unit: 'g' },
+      { id: 'cr6', name: '黄油(面团)', amount: 50, unit: 'g' },
+      { id: 'cr7', name: '片状黄油(裹入)', amount: 250, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'madeleine',
+    name: '柠檬玛德琳',
+    image: 'https://images.unsplash.com/photo-1558961363-fa4f2323a22d?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 12,
+    baseSize: 25,
+    targetYield: 12,
+    targetSize: 25,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'm1', name: '全蛋', amount: 2, unit: '个' },
+      { id: 'm2', name: '细砂糖', amount: 80, unit: 'g' },
+      { id: 'm3', name: '低筋面粉', amount: 100, unit: 'g' },
+      { id: 'm4', name: '泡打粉', amount: 3, unit: 'g' },
+      { id: 'm5', name: '黄油', amount: 100, unit: 'g' },
+      { id: 'm6', name: '柠檬皮屑', amount: 1, unit: '个' },
+      { id: 'm7', name: '蜂蜜', amount: 10, unit: 'g' },
     ],
     updatedAt: Date.now()
   }
