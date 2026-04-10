@@ -44,12 +44,12 @@ const NumericInput = ({ value, onChange, className, placeholder }: {
   
   useEffect(() => {
     const currentNum = parseFloat(localValue);
-    if (isNaN(currentNum)) {
-      if (value !== 0) setLocalValue(value.toString());
-    } else if (currentNum !== value) {
+    if (currentNum !== value && !isNaN(currentNum)) {
+      setLocalValue(value.toString());
+    } else if (isNaN(currentNum) && value !== 0) {
       setLocalValue(value.toString());
     }
-  }, [value, localValue]);
+  }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -187,7 +187,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'basque',
     name: '巴斯克芝士蛋糕',
-    image: 'https://images.unsplash.com/photo-1631209121750-a9f96637339d?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 1,
     baseSize: 6,
@@ -273,7 +273,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'bagel',
     name: '全麦贝果',
-    image: 'https://images.unsplash.com/photo-1585476108011-1550a6a8c348?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 6,
     baseSize: 80,
@@ -287,6 +287,71 @@ const DEFAULT_RECIPES: Recipe[] = [
       { id: 'ba4', name: '盐', amount: 5, unit: 'g' },
       { id: 'ba5', name: '干酵母', amount: 3, unit: 'g' },
       { id: 'ba6', name: '蜂蜜', amount: 10, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'garlic-bread',
+    name: '韩式蒜香奶酪包',
+    image: 'https://images.unsplash.com/photo-1619531043552-f96fe931f64f?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 6,
+    baseSize: 100,
+    targetYield: 6,
+    targetSize: 100,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'gb1', name: '高筋面粉', amount: 300, unit: 'g' },
+      { id: 'gb2', name: '牛奶', amount: 180, unit: 'g' },
+      { id: 'gb3', name: '细砂糖', amount: 30, unit: 'g' },
+      { id: 'gb4', name: '干酵母', amount: 5, unit: 'g' },
+      { id: 'gb5', name: '奶油芝士(内馅)', amount: 200, unit: 'g' },
+      { id: 'gb6', name: '大蒜(酱汁)', amount: 30, unit: 'g' },
+      { id: 'gb7', name: '黄油(酱汁)', amount: 100, unit: 'g' },
+      { id: 'gb8', name: '炼乳(酱汁)', amount: 30, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'canele',
+    name: '波尔多可露丽',
+    image: 'https://images.unsplash.com/photo-1621236304195-06bb1d5f48ae?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 12,
+    baseSize: 55,
+    targetYield: 12,
+    targetSize: 55,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'ca1', name: '牛奶', amount: 500, unit: 'ml' },
+      { id: 'ca2', name: '细砂糖', amount: 250, unit: 'g' },
+      { id: 'ca3', name: '黄油', amount: 50, unit: 'g' },
+      { id: 'ca4', name: '全蛋', amount: 2, unit: '个' },
+      { id: 'ca5', name: '蛋黄', amount: 2, unit: '个' },
+      { id: 'ca6', name: '低筋面粉', amount: 125, unit: 'g' },
+      { id: 'ca7', name: '朗姆酒', amount: 50, unit: 'ml' },
+      { id: 'ca8', name: '香草荚', amount: 1, unit: '根' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'egg-tart',
+    name: '葡式蛋挞',
+    image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 12,
+    baseSize: 45,
+    targetYield: 12,
+    targetSize: 45,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'et1', name: '淡奶油', amount: 200, unit: 'g' },
+      { id: 'et2', name: '牛奶', amount: 150, unit: 'g' },
+      { id: 'et3', name: '细砂糖', amount: 40, unit: 'g' },
+      { id: 'et4', name: '蛋黄', amount: 4, unit: '个' },
+      { id: 'et5', name: '炼乳', amount: 10, unit: 'g' },
+      { id: 'et6', name: '低筋面粉', amount: 10, unit: 'g' },
+      { id: 'et7', name: '成品挞皮', amount: 12, unit: '个' },
     ],
     updatedAt: Date.now()
   }
@@ -337,7 +402,7 @@ export default function App() {
     setIsLoaded(true);
     
     // Simulate a short delay for the splash screen transition
-    const timer = setTimeout(() => setIsAppReady(true), 2000);
+    const timer = setTimeout(() => setIsAppReady(true), 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -475,15 +540,19 @@ export default function App() {
   };
 
   const restoreDefaults = () => {
-    if (window.confirm('确定要恢复默认配方吗？这不会删除您自己创建的配方，但会将默认配方重新添加到库中。')) {
-      const existingIds = new Set(recipes.map(r => r.id));
-      const toAdd = DEFAULT_RECIPES.filter(r => !existingIds.has(r.id));
-      if (toAdd.length === 0) {
-        showToast('默认配方已在库中', 'info');
-        return;
-      }
-      setRecipes(prev => [...prev, ...toAdd]);
-      showToast(`已恢复 ${toAdd.length} 个默认配方`);
+    if (window.confirm('确定要恢复默认配方吗？这将更新现有默认配方的图片和内容，并添加缺失的品类。')) {
+      const defaultIds = new Set(DEFAULT_RECIPES.map(r => r.id));
+      
+      setRecipes(prev => {
+        // Keep user-created recipes (those not in DEFAULT_RECIPES)
+        const userRecipes = prev.filter(r => !defaultIds.has(r.id));
+        // Combine with fresh defaults
+        const updated = [...userRecipes, ...DEFAULT_RECIPES];
+        // Sort by updatedAt or just keep order
+        return updated.sort((a, b) => b.updatedAt - a.updatedAt);
+      });
+      
+      showToast(`已刷新并恢复默认配方库`);
     }
   };
 
@@ -802,38 +871,48 @@ ${currentRecipe.ingredients.map(ing => {
           {currentRecipe ? (
             /* Main Recipe Card */
             <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl border border-[#E6D5B8] overflow-hidden print:shadow-none print:border-none">
-              {/* Card Header: Recipe Name */}
-              <div className="relative bg-[#5C4033] p-6 md:p-8 text-white text-center space-y-2 overflow-hidden">
-                {currentRecipe.image && (
-                  <div className="absolute inset-0 opacity-30">
-                    <img src={currentRecipe.image} alt="" className="w-full h-full object-cover blur-sm scale-110" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#5C4033]/80 to-[#5C4033]" />
+              {/* Card Header: Recipe Name with Background Image */}
+              <div className="relative min-h-[180px] md:min-h-[240px] flex flex-col items-center justify-center p-6 md:p-8 text-white text-center overflow-hidden">
+                {currentRecipe.image ? (
+                  <div className="absolute inset-0">
+                    <img 
+                      src={currentRecipe.image} 
+                      alt="" 
+                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
+                      referrerPolicy="no-referrer" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#5C4033]/60 to-[#5C4033]" />
                   </div>
+                ) : (
+                  <div className="absolute inset-0 bg-[#5C4033]" />
                 )}
-                <div className="relative z-10 flex flex-col items-center gap-2 mb-2">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                    <Utensils size={12} />
-                    配方卡片
+                
+                <div className="relative z-10 flex flex-col items-center gap-3 w-full">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20">
+                      <Utensils size={12} />
+                      配方卡片
+                    </div>
+                    {currentRecipe.isDraft ? (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/30 backdrop-blur-md border border-amber-500/40 rounded-md text-[9px] font-black text-amber-200 uppercase tracking-tighter">
+                        <div className="w-1 h-1 bg-amber-400 rounded-full animate-pulse" />
+                        未保存的草稿
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/30 backdrop-blur-md border border-green-500/40 rounded-md text-[9px] font-black text-green-200 uppercase tracking-tighter">
+                        <ClipboardCheck size={10} className="text-green-300" />
+                        已录入配方库
+                      </div>
+                    )}
                   </div>
-                  {currentRecipe.isDraft ? (
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded-md text-[9px] font-black text-amber-300 uppercase tracking-tighter">
-                      <div className="w-1 h-1 bg-amber-400 rounded-full" />
-                      未保存的草稿
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/20 border border-green-500/30 rounded-md text-[9px] font-black text-green-300 uppercase tracking-tighter">
-                      <ClipboardCheck size={10} className="text-green-400" />
-                      已录入配方库
-                    </div>
-                  )}
+                  <input 
+                    type="text" 
+                    value={currentRecipe.name}
+                    onChange={(e) => updateCurrentRecipe({ name: e.target.value })}
+                    className="relative z-10 w-full text-2xl md:text-4xl font-black bg-transparent text-center outline-none border-b-2 border-transparent focus:border-white/40 transition-all placeholder:text-white/50 drop-shadow-lg"
+                    placeholder="输入配方名称"
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  value={currentRecipe.name}
-                  onChange={(e) => updateCurrentRecipe({ name: e.target.value })}
-                  className="relative z-10 w-full text-2xl md:text-3xl font-black bg-transparent text-center outline-none border-b-2 border-transparent focus:border-white/30 transition-all placeholder:text-white/50"
-                  placeholder="输入配方名称"
-                />
               </div>
 
               {/* Yield Controls */}
