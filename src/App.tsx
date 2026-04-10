@@ -112,6 +112,7 @@ interface Recipe {
   sizeUnit: string;  // e.g., "g", "ml", "寸"
   ingredients: Ingredient[];
   updatedAt: number;
+  image?: string;
   isDraft?: boolean; // New field to track unsaved recipes
 }
 
@@ -164,6 +165,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'shokupan',
     name: '招牌生吐司',
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop',
     yieldName: '条',
     baseYield: 1,
     baseSize: 450,
@@ -185,6 +187,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'basque',
     name: '巴斯克芝士蛋糕',
+    image: 'https://images.unsplash.com/photo-1631209121750-a9f96637339d?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 1,
     baseSize: 6,
@@ -202,8 +205,75 @@ const DEFAULT_RECIPES: Recipe[] = [
     updatedAt: Date.now()
   },
   {
+    id: 'shiopan',
+    name: '日式盐可颂',
+    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 12,
+    baseSize: 60,
+    targetYield: 12,
+    targetSize: 60,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'sp1', name: '高筋面粉', amount: 300, unit: 'g' },
+      { id: 'sp2', name: '细砂糖', amount: 15, unit: 'g' },
+      { id: 'sp3', name: '盐', amount: 5, unit: 'g' },
+      { id: 'sp4', name: '干酵母', amount: 4, unit: 'g' },
+      { id: 'sp5', name: '牛奶', amount: 190, unit: 'g' },
+      { id: 'sp6', name: '无盐黄油(揉面)', amount: 20, unit: 'g' },
+      { id: 'sp7', name: '有盐黄油(裹入)', amount: 60, unit: 'g' },
+      { id: 'sp8', name: '海盐装饰', amount: 2, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'tiramisu',
+    name: '经典提拉米苏',
+    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?q=80&w=800&auto=format&fit=crop',
+    yieldName: '份',
+    baseYield: 1,
+    baseSize: 500,
+    targetYield: 1,
+    targetSize: 500,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 't1', name: '马斯卡彭芝士', amount: 250, unit: 'g' },
+      { id: 't2', name: '蛋黄', amount: 2, unit: '个' },
+      { id: 't3', name: '细砂糖', amount: 40, unit: 'g' },
+      { id: 't4', name: '淡奶油', amount: 150, unit: 'g' },
+      { id: 't5', name: '手指饼干', amount: 100, unit: 'g' },
+      { id: 't6', name: '浓缩咖啡', amount: 80, unit: 'ml' },
+      { id: 't7', name: '咖啡酒', amount: 10, unit: 'ml' },
+      { id: 't8', name: '可可粉', amount: 5, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
+    id: 'cinnamon',
+    name: '美式肉桂卷',
+    image: 'https://images.unsplash.com/photo-1509365465985-25d11c17e812?q=80&w=800&auto=format&fit=crop',
+    yieldName: '个',
+    baseYield: 9,
+    baseSize: 85,
+    targetYield: 9,
+    targetSize: 85,
+    sizeUnit: 'g',
+    ingredients: [
+      { id: 'cn1', name: '高筋面粉', amount: 350, unit: 'g' },
+      { id: 'cn2', name: '牛奶', amount: 180, unit: 'g' },
+      { id: 'cn3', name: '细砂糖', amount: 45, unit: 'g' },
+      { id: 'cn4', name: '干酵母', amount: 5, unit: 'g' },
+      { id: 'cn5', name: '黄油', amount: 50, unit: 'g' },
+      { id: 'cn6', name: '肉桂粉', amount: 10, unit: 'g' },
+      { id: 'cn7', name: '红糖(内馅)', amount: 60, unit: 'g' },
+      { id: 'cn8', name: '奶油芝士(顶层)', amount: 50, unit: 'g' },
+    ],
+    updatedAt: Date.now()
+  },
+  {
     id: 'bagel',
     name: '全麦贝果',
+    image: 'https://images.unsplash.com/photo-1585476108011-1550a6a8c348?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 6,
     baseSize: 80,
@@ -211,33 +281,12 @@ const DEFAULT_RECIPES: Recipe[] = [
     targetSize: 80,
     sizeUnit: 'g',
     ingredients: [
-      { id: 'bg1', name: '高筋面粉', amount: 200, unit: 'g' },
-      { id: 'bg2', name: '全麦面粉', amount: 100, unit: 'g' },
-      { id: 'bg3', name: '冰水', amount: 185, unit: 'g' },
-      { id: 'bg4', name: '盐', amount: 5, unit: 'g' },
-      { id: 'bg5', name: '干酵母', amount: 3, unit: 'g' },
-      { id: 'bg6', name: '糖', amount: 10, unit: 'g' },
-    ],
-    updatedAt: Date.now()
-  },
-  {
-    id: 'cookie',
-    name: '海盐巧克力曲奇',
-    yieldName: '份',
-    baseYield: 1,
-    baseSize: 15,
-    targetYield: 1,
-    targetSize: 15,
-    sizeUnit: '块',
-    ingredients: [
-      { id: 'c1', name: '无盐黄油', amount: 110, unit: 'g' },
-      { id: 'c2', name: '红糖', amount: 80, unit: 'g' },
-      { id: 'c3', name: '细砂糖', amount: 40, unit: 'g' },
-      { id: 'c4', name: '全蛋', amount: 50, unit: 'g' },
-      { id: 'c5', name: '中筋面粉', amount: 180, unit: 'g' },
-      { id: 'c6', name: '可可粉', amount: 15, unit: 'g' },
-      { id: 'c7', name: '小苏打', amount: 2, unit: 'g' },
-      { id: 'c8', name: '巧克力豆', amount: 100, unit: 'g' },
+      { id: 'ba1', name: '高筋面粉', amount: 200, unit: 'g' },
+      { id: 'ba2', name: '全麦面粉', amount: 100, unit: 'g' },
+      { id: 'ba3', name: '水', amount: 170, unit: 'g' },
+      { id: 'ba4', name: '盐', amount: 5, unit: 'g' },
+      { id: 'ba5', name: '干酵母', amount: 3, unit: 'g' },
+      { id: 'ba6', name: '蜂蜜', amount: 10, unit: 'g' },
     ],
     updatedAt: Date.now()
   }
@@ -629,26 +678,33 @@ ${currentRecipe.ingredients.map(ing => {
                 }
               }}
               className={cn(
-                "w-full text-left p-4 rounded-2xl border transition-all group relative cursor-pointer outline-none focus:ring-2 focus:ring-[#5C4033] focus:ring-offset-2",
+                "w-full text-left p-4 rounded-2xl border transition-all group relative cursor-pointer outline-none focus:ring-2 focus:ring-[#5C4033] focus:ring-offset-2 flex gap-3",
                 currentRecipeId === recipe.id 
                   ? "bg-[#5C4033] border-[#5C4033] text-white shadow-lg" 
                   : "bg-white border-[#F0E6D2] hover:border-[#D4C3B3] text-[#5C4033]"
               )}
             >
-              <div className="font-bold truncate pr-8">{recipe.name}</div>
-              <div className={cn(
-                "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
-                currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
-              )}>
-                {recipe.isDraft && (
-                  <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[8px]",
-                    currentRecipeId === recipe.id ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-600"
-                  )}>草稿</span>
-                )}
-                <span>{recipe.ingredients.length} 种材料</span>
-                <span>•</span>
-                <span>{recipe.baseYield}{recipe.yieldName} × {recipe.baseSize}{recipe.sizeUnit}</span>
+              {recipe.image && (
+                <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-white/10">
+                  <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold truncate pr-8">{recipe.name}</div>
+                <div className={cn(
+                  "text-[10px] mt-1 uppercase tracking-wider font-bold flex items-center gap-2",
+                  currentRecipeId === recipe.id ? "text-white/60" : "text-[#D4C3B3]"
+                )}>
+                  {recipe.isDraft && (
+                    <span className={cn(
+                      "px-1.5 py-0.5 rounded text-[8px]",
+                      currentRecipeId === recipe.id ? "bg-white/20 text-white" : "bg-amber-500/10 text-amber-600"
+                    )}>草稿</span>
+                  )}
+                  <span>{recipe.ingredients.length} 种材料</span>
+                  <span>•</span>
+                  <span>{recipe.baseYield}{recipe.yieldName} × {recipe.baseSize}{recipe.sizeUnit}</span>
+                </div>
               </div>
               
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -747,8 +803,14 @@ ${currentRecipe.ingredients.map(ing => {
             /* Main Recipe Card */
             <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl border border-[#E6D5B8] overflow-hidden print:shadow-none print:border-none">
               {/* Card Header: Recipe Name */}
-              <div className="bg-[#5C4033] p-6 md:p-8 text-white text-center space-y-2">
-                <div className="flex flex-col items-center gap-2 mb-2">
+              <div className="relative bg-[#5C4033] p-6 md:p-8 text-white text-center space-y-2 overflow-hidden">
+                {currentRecipe.image && (
+                  <div className="absolute inset-0 opacity-30">
+                    <img src={currentRecipe.image} alt="" className="w-full h-full object-cover blur-sm scale-110" referrerPolicy="no-referrer" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#5C4033]/80 to-[#5C4033]" />
+                  </div>
+                )}
+                <div className="relative z-10 flex flex-col items-center gap-2 mb-2">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest">
                     <Utensils size={12} />
                     配方卡片
@@ -769,7 +831,7 @@ ${currentRecipe.ingredients.map(ing => {
                   type="text" 
                   value={currentRecipe.name}
                   onChange={(e) => updateCurrentRecipe({ name: e.target.value })}
-                  className="w-full text-2xl md:text-3xl font-black bg-transparent text-center outline-none border-b-2 border-transparent focus:border-white/30 transition-all placeholder:text-white/50"
+                  className="relative z-10 w-full text-2xl md:text-3xl font-black bg-transparent text-center outline-none border-b-2 border-transparent focus:border-white/30 transition-all placeholder:text-white/50"
                   placeholder="输入配方名称"
                 />
               </div>
