@@ -187,7 +187,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'basque',
     name: '巴斯克芝士蛋糕',
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1631209121750-a9f96637339d?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 1,
     baseSize: 6,
@@ -273,7 +273,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'bagel',
     name: '全麦贝果',
-    image: 'https://images.unsplash.com/photo-1533777324565-a040eb52facd?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1585476108011-1550a6a8c348?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 6,
     baseSize: 80,
@@ -337,7 +337,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'egg-tart',
     name: '葡式蛋挞',
-    image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1624300629298-e9de39c13be5?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 12,
     baseSize: 45,
@@ -358,7 +358,7 @@ const DEFAULT_RECIPES: Recipe[] = [
   {
     id: 'croissant',
     name: '法式羊角面包',
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=800&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1530610476181-d83430b64dcd?q=80&w=800&auto=format&fit=crop',
     yieldName: '个',
     baseYield: 10,
     baseSize: 65,
@@ -409,6 +409,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isRestoreConfirmOpen, setIsRestoreConfirmOpen] = useState(false);
 
   // Load recipes from local storage on mount
   useEffect(() => {
@@ -582,20 +583,19 @@ export default function App() {
   };
 
   const restoreDefaults = () => {
-    if (window.confirm('确定要恢复默认配方吗？这将更新现有默认配方的图片和内容，并添加缺失的品类。')) {
-      const defaultIds = new Set(DEFAULT_RECIPES.map(r => r.id));
-      
-      setRecipes(prev => {
-        // Keep user-created recipes (those not in DEFAULT_RECIPES)
-        const userRecipes = prev.filter(r => !defaultIds.has(r.id));
-        // Combine with fresh defaults
-        const updated = [...userRecipes, ...DEFAULT_RECIPES];
-        // Sort by updatedAt or just keep order
-        return updated.sort((a, b) => b.updatedAt - a.updatedAt);
-      });
-      
-      showToast(`已刷新并恢复默认配方库`);
-    }
+    const defaultIds = new Set(DEFAULT_RECIPES.map(r => r.id));
+    
+    setRecipes(prev => {
+      // Keep user-created recipes (those not in DEFAULT_RECIPES)
+      const userRecipes = prev.filter(r => !defaultIds.has(r.id));
+      // Combine with fresh defaults
+      const updated = [...userRecipes, ...DEFAULT_RECIPES];
+      // Sort by updatedAt or just keep order
+      return updated.sort((a, b) => b.updatedAt - a.updatedAt);
+    });
+    
+    setIsRestoreConfirmOpen(false);
+    showToast(`已刷新并恢复默认配方库`);
   };
 
   const scaleFactor = useMemo(() => {
@@ -683,6 +683,47 @@ ${currentRecipe.ingredients.map(ing => {
       </AnimatePresence>
       {/* Modals */}
       <AnimatePresence>
+        {isRestoreConfirmOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsRestoreConfirmOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center space-y-6"
+            >
+              <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto">
+                <RefreshCw size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-[#5C4033]">恢复默认配方？</h3>
+                <p className="text-[#8B5E3C] mt-2 text-sm leading-relaxed">
+                  这将更新现有默认配方的图片和内容，并添加缺失的品类。您自己创建的配方不会被删除。
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setIsRestoreConfirmOpen(false)}
+                  className="flex-1 py-3 bg-[#FAF7F2] text-[#8B5E3C] font-bold rounded-xl hover:bg-[#F5F1E9] transition-colors"
+                >
+                  取消
+                </button>
+                <button 
+                  onClick={restoreDefaults}
+                  className="flex-1 py-3 bg-[#5C4033] text-white font-bold rounded-xl hover:bg-[#4A3329] transition-colors shadow-lg shadow-[#5C4033]/20"
+                >
+                  确定恢复
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
         {recipeToDelete && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div 
@@ -843,13 +884,22 @@ ${currentRecipe.ingredients.map(ing => {
             <div className="text-center py-8 px-4 border-2 border-dashed border-[#E6D5B8] rounded-2xl">
               <p className="text-xs text-[#A89078] font-medium">未找到匹配配方</p>
               <button 
-                onClick={restoreDefaults}
+                onClick={() => setIsRestoreConfirmOpen(true)}
                 className="mt-2 text-[10px] font-bold text-[#5C4033] underline"
               >
                 恢复默认配方
               </button>
             </div>
           )}
+          
+          <div className="pt-4 mt-auto border-t border-[#F0E6D2]">
+            <button 
+              onClick={() => setIsRestoreConfirmOpen(true)}
+              className="w-full py-3 bg-[#FAF7F2] text-[#5C4033] rounded-xl text-xs font-bold hover:bg-[#F5F1E9] transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={14} /> 恢复/刷新默认配方库
+            </button>
+          </div>
         </div>
 
         <div className="p-4 border-t border-[#F0E6D2] space-y-2">
